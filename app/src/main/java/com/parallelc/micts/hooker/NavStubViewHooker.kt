@@ -24,23 +24,25 @@ class NavStubViewHooker {
         private lateinit var mCurrY: Field
         private lateinit var mInitY: Field
 
-        fun hook(param: PackageLoadedParam) {
+        fun hook(param: PackageLoadedParam, skipHookTouch: Boolean) {
             val navStubView = param.classLoader.loadClass("com.miui.home.recents.NavStubView")
+            runCatching {
+                module!!.hook(navStubView.getDeclaredMethod("startRecentsAnimationPre"), SkipHooker::class.java)
+            }
+            if (skipHookTouch) return
             runCatching { navStubView.getDeclaredField("mCheckLongPress") }
                 .onSuccess { throw Exception("mCheckLongPress exists") }
-                .onFailure {
-                    mCurrAction = navStubView.getDeclaredField("mCurrAction")
-                    mCurrAction.isAccessible = true
-                    mCurrX = navStubView.getDeclaredField("mCurrX")
-                    mCurrX.isAccessible = true
-                    mInitX = navStubView.getDeclaredField("mInitX")
-                    mInitX.isAccessible = true
-                    mCurrY = navStubView.getDeclaredField("mCurrY")
-                    mCurrY.isAccessible = true
-                    mInitY = navStubView.getDeclaredField("mInitY")
-                    mInitY.isAccessible = true
-                    module!!.hook(navStubView.getDeclaredMethod("onTouchEvent", MotionEvent::class.java), OnTouchEventHooker::class.java)
-                }
+            mCurrAction = navStubView.getDeclaredField("mCurrAction")
+            mCurrAction.isAccessible = true
+            mCurrX = navStubView.getDeclaredField("mCurrX")
+            mCurrX.isAccessible = true
+            mInitX = navStubView.getDeclaredField("mInitX")
+            mInitX.isAccessible = true
+            mCurrY = navStubView.getDeclaredField("mCurrY")
+            mCurrY.isAccessible = true
+            mInitY = navStubView.getDeclaredField("mInitY")
+            mInitY.isAccessible = true
+            module!!.hook(navStubView.getDeclaredMethod("onTouchEvent", MotionEvent::class.java), OnTouchEventHooker::class.java)
         }
 
         @XposedHooker

@@ -34,7 +34,7 @@ class CSMSHooker {
         fun startContextualSearch(entryPoint: Int): Boolean {
             var unhookers = mutableListOf<MethodUnhooker<Method>>()
             return runCatching {
-                unhookers += module!!.hook(enforcePermission!!, EnforcePermissionHooker::class.java)
+                unhookers += module!!.hook(enforcePermission!!, SkipHooker::class.java)
                 unhookers += module!!.hook(getContextualSearchPackageName!!, GetCSPackageNameHooker::class.java)
 
                 val icsmClass = Class.forName("android.app.contextualsearch.IContextualSearchManager")
@@ -57,17 +57,6 @@ class CSMSHooker {
                     if (callback.args[1] == contextualSearchPackageName) {
                         callback.returnAndSkip(true)
                     }
-                }
-            }
-        }
-
-        @XposedHooker
-        class EnforcePermissionHooker : Hooker {
-            companion object {
-                @JvmStatic
-                @BeforeInvocation
-                fun before(callback: BeforeHookCallback) {
-                    callback.returnAndSkip(null)
                 }
             }
         }
